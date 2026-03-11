@@ -182,13 +182,14 @@ npm run cli:list -- --help
 
 ## Releases
 
-Publish a new npm release:
+Push a new version tag and GitHub Actions will publish it to npm automatically:
 
 ```bash
 npm version patch
-npm publish
 git push origin master --follow-tags
 ```
+
+The publish workflow runs from [`publish.yml`](./.github/workflows/publish.yml) when a tag like `v0.1.2` is pushed. It verifies that the tag matches the version in `package.json`, runs the full check suite, and then publishes to npm.
 
 If you want to inspect the publish payload first:
 

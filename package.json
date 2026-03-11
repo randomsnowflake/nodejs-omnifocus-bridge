@@ -1,0 +1,47 @@
+{
+  "name": "nodejs-omnifocus-bridge",
+  "version": "0.1.0",
+  "description": "Standalone OmniFocus reader and CLI for local macOS installs and encrypted vaults.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "omnifocus-list": "./dist/cli/omnifocus-list.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    ".env.example"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage",
+    "cli:list": "tsx src/cli/omnifocus-list.ts"
+  },
+  "keywords": [
+    "omnifocus",
+    "typescript",
+    "cli",
+    "macos"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "jszip": "^3.10.1",
+    "plist": "^3.1.0",
+    "sax": "^1.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.2.1",
+    "@vitest/coverage-v8": "^3.2.4",
+    "tsx": "^4.20.4",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}
+

@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { readOmniFocus } from "../src/api.js";
 import { TaskFilterService } from "../src/filter/TaskFilterService.js";
 import {
   evaluateTaskAvailability,

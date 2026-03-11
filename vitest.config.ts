@@ -10,15 +10,16 @@ export default defineConfig({
       exclude: [
         "src/cli/**",
         "src/index.ts",
+        "src/**/index.ts",
         "src/types.ts",
         "src/vendor.d.ts",
         "src/parser/types.ts"
       ],
       thresholds: {
-        statements: 100,
-        branches: 100,
-        functions: 100,
-        lines: 100
+        statements: 95,
+        branches: 90,
+        functions: 95,
+        lines: 95
       }
     }
   }

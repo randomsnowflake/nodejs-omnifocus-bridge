@@ -124,6 +124,7 @@ describe("direct internal coverage", () => {
     const result = parser.parse(`<?xml version="1.0" encoding="UTF-8"?>
 <omnifocus>
   <task id="task-1" odd="true">
+    <name>Task</name>
     <location name="Ignored" latitude="1" />
   </task>
   <context id="ctx-1" strange="value">

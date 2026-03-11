@@ -7,6 +7,53 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./crypto": {
+      "types": "./dist/crypto/index.d.ts",
+      "import": "./dist/crypto/index.js"
+    },
+    "./errors": {
+      "types": "./dist/errors.d.ts",
+      "import": "./dist/errors.js"
+    },
+    "./filter": {
+      "types": "./dist/filter/index.d.ts",
+      "import": "./dist/filter/index.js"
+    },
+    "./parser": {
+      "types": "./dist/parser/index.d.ts",
+      "import": "./dist/parser/index.js"
+    },
+    "./reader": {
+      "types": "./dist/reader/index.d.ts",
+      "import": "./dist/reader/index.js"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "crypto": [
+        "./dist/crypto/index.d.ts"
+      ],
+      "errors": [
+        "./dist/errors.d.ts"
+      ],
+      "filter": [
+        "./dist/filter/index.d.ts"
+      ],
+      "parser": [
+        "./dist/parser/index.d.ts"
+      ],
+      "reader": [
+        "./dist/reader/index.d.ts"
+      ],
+      "utils": [
+        "./dist/utils/index.d.ts"
+      ]
     }
   },
   "engines": {
@@ -19,15 +66,22 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "docs",
+    "examples",
+    "LICENSE"
   ],
   "scripts": {
     "clean": "node -e \"import('node:fs').then((fs) => fs.rmSync('dist', { recursive: true, force: true }))\"",
+    "clean:coverage": "node -e \"import('node:fs').then((fs) => fs.rmSync('coverage', { recursive: true, force: true }))\"",
     "build": "npm run clean && tsc -p tsconfig.json",
     "prepack": "npm run build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "npm run clean:coverage && vitest run --coverage",
     "cli:list": "tsx src/cli/omnifocus-list.ts"
   },
   "keywords": [
@@ -51,10 +105,14 @@
     "sax": "^1.4.1"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^24.2.1",
     "@vitest/coverage-v8": "^3.2.4",
+    "eslint": "^10.0.3",
+    "globals": "^17.4.0",
     "tsx": "^4.20.4",
     "typescript": "^5.9.2",
+    "typescript-eslint": "^8.57.0",
     "vitest": "^3.2.4"
   }
 }

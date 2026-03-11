@@ -245,4 +245,28 @@ describe("SaxOmniFocusParser", () => {
     expect(result.tasks.map((task) => task.id)).toEqual(["repeat-1", "repeat-2", "repeat-3"]);
     expect(result.tasks.map((task) => task.note)).toEqual(["first", "second", null]);
   });
+
+  it("drops skeletal update stubs but keeps unknown updates with real task data", () => {
+    const parser = new SaxOmniFocusParser(new LoggerService());
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<omnifocus>
+  <task id="stub-task" op="update">
+    <added>2025-11-10T09:16:05.581Z</added>
+    <rank>-1403785459</rank>
+  </task>
+  <task id="real-task" op="update">
+    <name>Captured Later</name>
+    <note><p>Body</p></note>
+  </task>
+</omnifocus>`;
+
+    const result = parser.parse(xml);
+
+    expect(result.tasks.find((task) => task.id === "stub-task")).toBeUndefined();
+    expect(result.tasks.find((task) => task.id === "real-task")).toMatchObject({
+      id: "real-task",
+      name: "Captured Later"
+    });
+  });
 });

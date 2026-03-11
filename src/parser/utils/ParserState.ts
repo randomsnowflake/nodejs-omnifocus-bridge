@@ -1,6 +1,56 @@
 import type { BaseTask, Context, Folder, Project, TagRelationship, Task } from "../../types.js";
 import type { ProjectStackEntry } from "../types.js";
 
+function hasMeaningfulTaskPayload(task: BaseTask): boolean {
+  if (task.name?.trim()) {
+    return true;
+  }
+
+  if (task.note?.trim()) {
+    return true;
+  }
+
+  if (task.modified) {
+    return true;
+  }
+
+  if (
+    task.flagged ||
+    task.hidden ||
+    task.completedByChildren ||
+    task.catchUpAutomatically ||
+    task.inbox ||
+    task.order ||
+    task.start ||
+    task.due ||
+    task.completed ||
+    task.repeat ||
+    task.repetitionRule ||
+    task.repetitionMethod ||
+    task.containerId ||
+    task.contextId ||
+    task.estimatedMinutes !== null ||
+    task.nextCloneIdentifier ||
+    task.dueDateAlarmPolicy ||
+    task.deferDateAlarmPolicy ||
+    task.latestTimeToStartAlarmPolicy ||
+    task.plannedDateAlarmPolicy ||
+    task.repetitionScheduleType ||
+    task.repetitionAnchorDate ||
+    task.planned
+  ) {
+    return true;
+  }
+
+  return Boolean(
+    task.project.singleton ||
+      task.project.reviewInterval ||
+      task.project.lastReview ||
+      task.project.status ||
+      task.project.nextReview
+  );
+}
+
 export class ParserState {
   contexts: Context[] = [];
   folders: Folder[] = [];
@@ -91,6 +141,10 @@ export class ParserState {
     this.tasks = [];
 
     for (const task of this.taskMap.values()) {
+      if (!hasMeaningfulTaskPayload(task)) {
+        continue;
+      }
+
       if (task.type === "project") {
         this.projects.push(task as Project);
       } else {
@@ -129,4 +183,3 @@ export class ParserState {
     return Array.from(this.siblingElements.get(parentTag) ?? []);
   }
 }
-

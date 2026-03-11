@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import * as fs from "node:fs";
 import * as readline from "node:readline";
 
 import { readOmniFocus } from "../api.js";
@@ -8,13 +9,56 @@ import { resolveOmniFocusSource } from "../source/resolveOmniFocusSource.js";
 import type { OmniFocusReaderOptions, TaskStatusFilter } from "../types.js";
 
 const VALID_FILTERS: TaskStatusFilter[] = ["available", "remaining", "dropped", "completed", "all"];
+const CLI_NAME = "omnifocus-list";
+const PACKAGE_VERSION = JSON.parse(fs.readFileSync(new URL("../../package.json", import.meta.url), "utf8")).version as string;
 
-function parseArgs(argv: string[]): OmniFocusReaderOptions & { filter: TaskStatusFilter; json: boolean } {
-  const parsed: OmniFocusReaderOptions & { filter: TaskStatusFilter; json: boolean } = {
+type CliArgs = OmniFocusReaderOptions & {
+  filter: TaskStatusFilter;
+  help: boolean;
+  json: boolean;
+  version: boolean;
+};
+
+function getHelpText(): string {
+  return [
+    `${CLI_NAME} ${PACKAGE_VERSION}`,
+    "",
+    "Read OmniFocus databases from a local macOS install or an encrypted vault.",
+    "",
+    "Usage:",
+    `  ${CLI_NAME} [options]`,
+    "",
+    "Options:",
+    "  --filter <available|remaining|dropped|completed|all>",
+    "  --source <auto|local|vault>",
+    "  --path <path>",
+    "  --password <password>",
+    "  --base-only",
+    "  --json",
+    "  -h, --help",
+    "  -v, --version",
+    "",
+    "Environment variables:",
+    "  OMNIFOCUS_PASSWORD",
+    "  OMNIFOCUS_LOCAL_PATH",
+    "  OMNIFOCUS_VAULT_PATH",
+    "",
+    "Examples:",
+    `  ${CLI_NAME} --filter available`,
+    `  ${CLI_NAME} --source local`,
+    `  ${CLI_NAME} --source vault --path ~/OmniFocus.ofocus --json`,
+    `  OMNIFOCUS_PASSWORD=secret ${CLI_NAME} --source vault --path ~/OmniFocus.ofocus`
+  ].join("\n");
+}
+
+function parseArgs(argv: string[]): CliArgs {
+  const parsed: CliArgs = {
     source: "auto",
     readAllPatches: true,
     filter: "available",
-    json: false
+    help: false,
+    json: false,
+    version: false
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -56,6 +100,14 @@ function parseArgs(argv: string[]): OmniFocusReaderOptions & { filter: TaskStatu
       case "--json":
         parsed.json = true;
         break;
+      case "-h":
+      case "--help":
+        parsed.help = true;
+        break;
+      case "-v":
+      case "--version":
+        parsed.version = true;
+        break;
       default:
         if (arg.startsWith("--")) {
           throw new Error(`Unknown argument: ${arg}`);
@@ -75,7 +127,7 @@ function formatCliError(error: unknown): string {
     return `${message}\n\nmacOS may be blocking access to the OmniFocus database.\nGrant your terminal app Full Disk Access and Files & Folders access, then restart the terminal and try again.`;
   }
 
-  return message;
+  return `${message}\n\nRun '${CLI_NAME} --help' for usage.`;
 }
 
 async function promptForPassword(prompt = "OmniFocus password: "): Promise<string> {
@@ -134,6 +186,14 @@ async function promptForPassword(prompt = "OmniFocus password: "): Promise<strin
 async function main(): Promise<void> {
   try {
     const args = parseArgs(process.argv.slice(2));
+    if (args.help) {
+      console.log(getHelpText());
+      return;
+    }
+    if (args.version) {
+      console.log(PACKAGE_VERSION);
+      return;
+    }
     const source = await resolveOmniFocusSource(args);
     if (source.source === "vault" && !args.password && !process.env.OMNIFOCUS_PASSWORD) {
       args.password = await promptForPassword();

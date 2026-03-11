@@ -1,4 +1,4 @@
-import type { BaseTask, Context, OmniFocusDocument, Project, TagRelationship, Task, TaskStatusFilter } from "../types.js";
+import type { BaseTask, Context, OmniFocusDocument, Project, Task, TaskStatusFilter } from "../types.js";
 import { evaluateTaskAvailability, isDroppedOrCanceled, type AvailabilityContext } from "./availabilityFilter.js";
 import { deduplicateRecurringTasks } from "./deferralFilter.js";
 import { isTaskRemaining, type RemainingContext } from "./remainingFilter.js";
@@ -125,4 +125,3 @@ export class TaskFilterService {
     };
   }
 }
-

@@ -1,7 +1,7 @@
 node_modules/
 dist/
 coverage/
+*.tgz
 .env
 TESTDATA/
 .DS_Store
-

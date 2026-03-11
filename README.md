@@ -179,3 +179,24 @@ npm run check
 npm run test:coverage
 npm run cli:list -- --help
 ```
+
+## Releases
+
+Publish a new npm release:
+
+```bash
+npm version patch
+npm publish
+git push origin master --follow-tags
+```
+
+If you want to inspect the publish payload first:
+
+```bash
+npm pack --dry-run
+```
+
+The package is published here:
+
+- [npm package](https://www.npmjs.com/package/nodejs-omnifocus-bridge)
+- [GitHub releases](https://github.com/randomsnowflake/nodejs-omnifocus-bridge/releases)

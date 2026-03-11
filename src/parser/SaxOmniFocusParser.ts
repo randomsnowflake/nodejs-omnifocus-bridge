@@ -10,7 +10,6 @@ import { TagRelationshipHandler } from "./handlers/TagRelationshipHandler.js";
 import { TaskHandler } from "./handlers/TaskHandler.js";
 import { DeleteProcessor } from "./processors/DeleteProcessor.js";
 import { NoteProcessor } from "./processors/NoteProcessor.js";
-import { EntityDeduplicator } from "./utils/EntityDeduplicator.js";
 import { ParserState } from "./utils/ParserState.js";
 
 export class SaxOmniFocusParser {
@@ -141,9 +140,6 @@ export class SaxOmniFocusParser {
 
     this.state.extractEntities();
     this.state.applyInboxOverrides();
-    const deduplicated = EntityDeduplicator.deduplicateRecurringTasks(this.state.tasks, this.state.projects);
-    this.state.tasks = deduplicated.tasks;
-    this.state.projects = deduplicated.projects;
     this.logger.getSummary();
 
     return {

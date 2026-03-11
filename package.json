@@ -3,6 +3,12 @@
   "version": "0.1.0",
   "description": "Standalone OmniFocus reader and CLI for local macOS installs and encrypted vaults.",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "engines": {
     "node": ">=20"
   },
@@ -13,11 +19,12 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "README.md",
-    ".env.example"
+    "README.md"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "clean": "node -e \"import('node:fs').then((fs) => fs.rmSync('dist', { recursive: true, force: true }))\"",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "prepack": "npm run build",
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
@@ -30,8 +37,15 @@
     "macos"
   ],
   "license": "MIT",
+  "homepage": "https://github.com/johannes/nodejs-omnifocus-bridge#readme",
+  "bugs": {
+    "url": "https://github.com/johannes/nodejs-omnifocus-bridge/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johannes/nodejs-omnifocus-bridge.git"
+  },
   "dependencies": {
-    "dotenv": "^17.2.3",
     "jszip": "^3.10.1",
     "plist": "^3.1.0",
     "sax": "^1.4.1"
@@ -44,4 +58,3 @@
     "vitest": "^3.2.4"
   }
 }
-

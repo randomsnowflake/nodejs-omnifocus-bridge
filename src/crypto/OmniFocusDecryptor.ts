@@ -10,7 +10,7 @@ import {
   InvalidFileFormatError,
   InvalidPasswordError
 } from "../errors.js";
-import { readFile, readdir, stat, isTransientFileError } from "./cryptoUtils.js";
+import { readFile, readdir, stat } from "./cryptoUtils.js";
 
 const plist = (plistModule as typeof plistModule & { default?: typeof plistModule }).default ?? plistModule;
 
@@ -306,8 +306,12 @@ class EncryptedFileHelper {
 }
 
 export class DecryptionSession {
+  private static readonly CLEANUP_SIGNALS: NodeJS.Signals[] = ["SIGINT", "SIGTERM", "SIGHUP"];
+
   private tempDir: string | null = null;
   private decryptedPath: string | null = null;
+  private cleanupInFlight: Promise<void> | null = null;
+  private readonly signalHandlers = new Map<NodeJS.Signals, () => void>();
 
   constructor(
     private readonly encryptedPath: string,
@@ -321,6 +325,7 @@ export class DecryptionSession {
   async decrypt(): Promise<string> {
     this.tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "omnifocus-decrypted-"));
     this.decryptedPath = this.tempDir;
+    this.registerSignalHandlers();
 
     try {
       await this.decryptDirectory(this.encryptedPath, this.decryptedPath);
@@ -332,13 +337,23 @@ export class DecryptionSession {
   }
 
   async cleanup(): Promise<void> {
+    if (this.cleanupInFlight) {
+      return this.cleanupInFlight;
+    }
+
+    this.unregisterSignalHandlers();
+
     if (!this.tempDir) {
       return;
     }
 
-    await fs.promises.rm(this.tempDir, { recursive: true, force: true });
-    this.tempDir = null;
-    this.decryptedPath = null;
+    this.cleanupInFlight = fs.promises.rm(this.tempDir, { recursive: true, force: true }).finally(() => {
+      this.tempDir = null;
+      this.decryptedPath = null;
+      this.cleanupInFlight = null;
+    });
+
+    return this.cleanupInFlight;
   }
 
   private async decryptDirectory(indir: string, outdir: string): Promise<void> {
@@ -382,15 +397,27 @@ export class DecryptionSession {
         continue;
       }
 
-      try {
-        await documentKey.decryptFile(entry.name, inputPath, outputPath);
-      } catch (error) {
-        if (isTransientFileError(error)) {
-          continue;
-        }
-        throw error;
-      }
+      await documentKey.decryptFile(entry.name, inputPath, outputPath);
     }
+  }
+
+  private registerSignalHandlers(): void {
+    for (const signal of DecryptionSession.CLEANUP_SIGNALS) {
+      const handler = (): void => {
+        this.unregisterSignalHandlers();
+        void this.cleanup().finally(() => process.kill(process.pid, signal));
+      };
+
+      this.signalHandlers.set(signal, handler);
+      process.once(signal, handler);
+    }
+  }
+
+  private unregisterSignalHandlers(): void {
+    for (const [signal, handler] of this.signalHandlers) {
+      process.off(signal, handler);
+    }
+    this.signalHandlers.clear();
   }
 }
 
@@ -421,4 +448,3 @@ export class OmniFocusDecryptor {
     }
   }
 }
-

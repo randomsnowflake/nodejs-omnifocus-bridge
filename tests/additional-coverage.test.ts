@@ -444,8 +444,8 @@ describe("additional source, ordering, reader, and decryptor coverage", () => {
           .mockRejectedValueOnce(Object.assign(new Error("busy"), { code: "EBUSY" }))
           .mockResolvedValueOnce(undefined)
       };
-      await session.processDirectory(inputDir, outputDir, transientKey, "");
-      expect(transientKey.decryptFile).toHaveBeenCalledTimes(2);
+      await expect(session.processDirectory(inputDir, outputDir, transientKey, "")).rejects.toMatchObject({ code: "EBUSY" });
+      expect(transientKey.decryptFile).toHaveBeenCalledTimes(1);
 
       const throwingKey = {
         decryptFile: vi.fn().mockRejectedValue(new Error("boom"))

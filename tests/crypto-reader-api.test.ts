@@ -5,7 +5,7 @@ import * as path from "node:path";
 
 import JSZip from "jszip";
 import plist from "plist";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { readOmniFocus } from "../src/api.js";
 import { DecryptionSession, DocumentKey, FileVerificationError, InvalidPasswordError, OmniFocusDecryptor } from "../src/crypto/OmniFocusDecryptor.js";
@@ -209,6 +209,23 @@ describe("DocumentKey and decryptor helpers", () => {
 
       expect(await OmniFocusDecryptor.isEncryptedDatabase(vaultPath)).toBe(true);
       expect(await OmniFocusDecryptor.isEncryptedDatabase(path.join(tempDir, "missing"))).toBe(false);
+    });
+  });
+
+  it("fails instead of silently skipping transient decrypt errors", async () => {
+    await withTempDir(async (tempDir) => {
+      const xml = `<?xml version="1.0" encoding="UTF-8"?><omnifocus><task id="task-1"><name>Hello</name></task></omnifocus>`;
+      const vaultPath = await createEncryptedVault(tempDir, "secret", xml);
+      const session = new DecryptionSession(vaultPath, "secret");
+
+      const decryptSpy = vi
+        .spyOn(DocumentKey.prototype, "decryptFile")
+        .mockRejectedValueOnce(Object.assign(new Error("busy"), { code: "EBUSY" }));
+
+      await expect(session.decrypt()).rejects.toMatchObject({ code: "EBUSY" });
+
+      decryptSpy.mockRestore();
+      await session.cleanup();
     });
   });
 });

@@ -93,6 +93,7 @@ describe("filter services and rendering", () => {
       tagsByTask: new Map()
     })).toBe(true);
     expect(isDeferred(deferredTask, new Date("2024-01-15T12:00:00Z"))).toBe(true);
+    expect(isDeferred(createTask({ start: new Date("2024-01-15T12:00:59Z") }), new Date("2024-01-15T12:00:01Z"))).toBe(true);
     expect(isDroppedOrCanceled(droppedTask)).toBe(true);
     expect(getContextBlocker(blockedByTag, {
       contextsMap: new Map(document.contexts.map((context) => [context.id, context])),
@@ -128,6 +129,20 @@ describe("filter services and rendering", () => {
         tagsByTask: new Map()
       })
     ).toBe("child_blocked");
+    expect(
+      evaluateTaskAvailability(
+        createProject({ id: "hidden-project", name: "Hidden Project" }),
+        new Date("2024-01-15T12:00:00Z"),
+        new Set(),
+        {
+          contextsMap: new Map(document.contexts.map((context) => [context.id, context])),
+          projectsMap: new Map([["hidden-project", createProject({ id: "hidden-project", name: "Hidden Project" })]]),
+          tasksMap: new Map([["hidden-child", createTask({ id: "hidden-child", containerId: "hidden-project", hidden: true })]]),
+          tasksByContainer: new Map([["hidden-project", [createTask({ id: "hidden-child", containerId: "hidden-project", hidden: true })]]]),
+          tagsByTask: new Map()
+        }
+      )
+    ).toBe("child_blocked");
     expect(isTaskRemaining(droppedProjectTask, {
       contextsMap: new Map(document.contexts.map((context) => [context.id, context])),
       projectsMap: new Map(document.projects.map((projectItem) => [projectItem.id, projectItem])),
@@ -155,9 +170,9 @@ Tags/Contexts: 4
 
 TAGS/CONTEXTS:
 ----------------------------------------
-└── Work
-└── Context (paused)
-└── Context (dropped)
+├── Work
+├── Context (paused)
+├── Context (dropped)
 └── Context (paused)
 
 INBOX:

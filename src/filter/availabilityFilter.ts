@@ -84,7 +84,7 @@ export function isDeferred(task: BaseTask, now: Date): boolean {
   if (!task.start) {
     return false;
   }
-  return task.start.toISOString().slice(0, 16) > now.toISOString().slice(0, 16);
+  return task.start.getTime() > now.getTime();
 }
 
 export function isProjectStatusActive(status: string | null | undefined): boolean {
@@ -179,7 +179,14 @@ function isFirstAvailableInSequence(task: BaseTask, now: Date, visitedIds: Set<s
 
   const siblings = sortTasksByOrder(ctx.tasksByContainer.get(task.containerId) ?? []);
   for (const sibling of siblings) {
-    if (sibling.completed || isDeferred(sibling, now)) {
+    if (
+      sibling.hidden ||
+      sibling.completed ||
+      isDroppedOrCanceled(sibling) ||
+      !isProjectOrTaskActive(sibling) ||
+      getContextBlocker(sibling, ctx) ||
+      isDeferred(sibling, now)
+    ) {
       continue;
     }
 
@@ -211,7 +218,13 @@ function hasAvailableDescendant(containerId: string, now: Date, visitedIds: Set<
   }
 
   for (const child of children) {
-    if (visitedIds.has(child.id) || child.completed || isDroppedOrCanceled(child) || !isProjectOrTaskActive(child)) {
+    if (
+      visitedIds.has(child.id) ||
+      child.hidden ||
+      child.completed ||
+      isDroppedOrCanceled(child) ||
+      !isProjectOrTaskActive(child)
+    ) {
       continue;
     }
     if (getContextBlocker(child, ctx) || isDeferred(child, now) || !isFirstAvailableInSequence(child, now, visitedIds, ctx)) {

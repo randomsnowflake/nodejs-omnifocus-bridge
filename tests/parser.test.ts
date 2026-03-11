@@ -217,4 +217,32 @@ describe("SaxOmniFocusParser", () => {
       contextId: null
     });
   });
+
+  it("keeps recurring items distinct in the parsed document", () => {
+    const parser = new SaxOmniFocusParser(new LoggerService());
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<omnifocus>
+  <task id="repeat-1">
+    <name>Recurring</name>
+    <repetition-rule>FREQ=DAILY</repetition-rule>
+    <note>first</note>
+  </task>
+  <task id="repeat-2">
+    <name>Recurring</name>
+    <repetition-rule>FREQ=DAILY</repetition-rule>
+    <note>second</note>
+  </task>
+  <task id="repeat-3">
+    <name>Recurring</name>
+    <repetition-rule>FREQ=DAILY</repetition-rule>
+    <completed>2024-01-01T00:00:00Z</completed>
+  </task>
+</omnifocus>`;
+
+    const result = parser.parse(xml);
+
+    expect(result.tasks.map((task) => task.id)).toEqual(["repeat-1", "repeat-2", "repeat-3"]);
+    expect(result.tasks.map((task) => task.note)).toEqual(["first", "second", null]);
+  });
 });

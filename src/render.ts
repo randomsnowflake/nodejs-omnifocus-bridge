@@ -2,11 +2,11 @@ import { createContextTree, createInboxTree, createProjectTree } from "./snapsho
 import type { OmniFocusSnapshot, Project, RenderTaskChartOptions, Task, TreeNode } from "./types.js";
 import { HTMLCleaner } from "./utils/htmlCleaner.js";
 
-function printTree(lines: string[], nodes: TreeNode[], indent = "", isLast = true, noteMaxLength = 80): void {
+function printTree(lines: string[], nodes: TreeNode[], indent = "", noteMaxLength = 80): void {
   nodes.forEach((node, index) => {
     const isLastChild = index === nodes.length - 1;
-    const prefix = indent + (isLast ? "└── " : "├── ");
-    const childIndent = indent + (isLast ? "    " : "│   ");
+    const prefix = indent + (isLastChild ? "└── " : "├── ");
+    const childIndent = indent + (isLastChild ? "    " : "│   ");
 
     let icon = "";
     if (node.type === "folder") {
@@ -29,7 +29,7 @@ function printTree(lines: string[], nodes: TreeNode[], indent = "", isLast = tru
     }
 
     if (node.children.length > 0) {
-      printTree(lines, node.children, childIndent, isLastChild, noteMaxLength);
+      printTree(lines, node.children, childIndent, noteMaxLength);
     }
   });
 }
@@ -53,20 +53,19 @@ export function renderTaskChart(snapshot: OmniFocusSnapshot, options: RenderTask
   lines.push("");
   lines.push("TAGS/CONTEXTS:");
   lines.push("-".repeat(40));
-  printTree(lines, createContextTree(snapshot), "", true, noteMaxLength);
+  printTree(lines, createContextTree(snapshot), "", noteMaxLength);
 
   if (snapshot.partition.inboxTasks.length > 0) {
     lines.push("");
     lines.push("INBOX:");
     lines.push("-".repeat(40));
-    printTree(lines, createInboxTree(snapshot), "", true, noteMaxLength);
+    printTree(lines, createInboxTree(snapshot), "", noteMaxLength);
   }
 
   lines.push("");
   lines.push("FOLDERS & PROJECTS:");
   lines.push("-".repeat(40));
-  printTree(lines, createProjectTree(snapshot), "", true, noteMaxLength);
+  printTree(lines, createProjectTree(snapshot), "", noteMaxLength);
 
   return lines.join("\n");
 }
-

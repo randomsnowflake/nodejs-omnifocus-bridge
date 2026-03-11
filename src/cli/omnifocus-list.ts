@@ -1,12 +1,11 @@
 #!/usr/bin/env node
-import { config as loadEnv } from "dotenv";
+import * as readline from "node:readline";
 
 import { readOmniFocus } from "../api.js";
 import { createSnapshot } from "../snapshot.js";
 import { renderTaskChart } from "../render.js";
+import { resolveOmniFocusSource } from "../source/resolveOmniFocusSource.js";
 import type { OmniFocusReaderOptions, TaskStatusFilter } from "../types.js";
-
-loadEnv();
 
 const VALID_FILTERS: TaskStatusFilter[] = ["available", "remaining", "dropped", "completed", "all"];
 
@@ -79,10 +78,68 @@ function formatCliError(error: unknown): string {
   return message;
 }
 
+async function promptForPassword(prompt = "OmniFocus password: "): Promise<string> {
+  if (!process.stdin.isTTY || !process.stdout.isTTY) {
+    throw new Error("A vault password is required. Set OMNIFOCUS_PASSWORD or use --password when running non-interactively.");
+  }
+
+  return new Promise((resolve, reject) => {
+    readline.emitKeypressEvents(process.stdin);
+
+    let password = "";
+    const wasRawMode = process.stdin.isRaw;
+
+    const cleanup = (): void => {
+      process.stdin.off("keypress", onKeypress);
+      if (process.stdin.isTTY) {
+        process.stdin.setRawMode(Boolean(wasRawMode));
+      }
+      process.stdin.pause();
+    };
+
+    const onKeypress = (_: string, key: readline.Key): void => {
+      if (key.name === "return" || key.name === "enter") {
+        process.stdout.write("\n");
+        cleanup();
+        resolve(password);
+        return;
+      }
+
+      if (key.ctrl && key.name === "c") {
+        process.stdout.write("\n");
+        cleanup();
+        reject(new Error("Password prompt cancelled"));
+        return;
+      }
+
+      if (key.name === "backspace" || key.name === "delete") {
+        password = password.slice(0, -1);
+        return;
+      }
+
+      if (key.sequence && !key.ctrl && !key.meta) {
+        password += key.sequence;
+      }
+    };
+
+    process.stdout.write(prompt);
+    process.stdin.resume();
+    if (process.stdin.isTTY) {
+      process.stdin.setRawMode(true);
+    }
+    process.stdin.on("keypress", onKeypress);
+  });
+}
+
 async function main(): Promise<void> {
   try {
     const args = parseArgs(process.argv.slice(2));
-    const document = await readOmniFocus(args);
+    const source = await resolveOmniFocusSource(args);
+    if (source.source === "vault" && !args.password && !process.env.OMNIFOCUS_PASSWORD) {
+      args.password = await promptForPassword();
+    }
+
+    const document = await readOmniFocus({ ...args, source: source.source, path: source.path });
     const snapshot = createSnapshot(document, args.filter);
 
     if (args.json) {

@@ -91,13 +91,13 @@
     "macos"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/johannes/nodejs-omnifocus-bridge#readme",
+  "homepage": "https://github.com/randomsnowflake/nodejs-omnifocus-bridge#readme",
   "bugs": {
-    "url": "https://github.com/johannes/nodejs-omnifocus-bridge/issues"
+    "url": "https://github.com/randomsnowflake/nodejs-omnifocus-bridge/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/johannes/nodejs-omnifocus-bridge.git"
+    "url": "git+https://github.com/randomsnowflake/nodejs-omnifocus-bridge.git"
   },
   "dependencies": {
     "jszip": "^3.10.1",

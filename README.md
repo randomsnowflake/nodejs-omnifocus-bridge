@@ -34,7 +34,7 @@ npm install nodejs-omnifocus-bridge
 Run the CLI without a global install:
 
 ```bash
-npx omnifocus-list --help
+npx --package nodejs-omnifocus-bridge omnifocus-list --help
 ```
 
 Or install the CLI globally:
@@ -48,25 +48,25 @@ npm install -g nodejs-omnifocus-bridge
 Show available tasks from the auto-detected source:
 
 ```bash
-npx omnifocus-list --filter available
+npx --package nodejs-omnifocus-bridge omnifocus-list --filter available
 ```
 
 Read the local macOS database explicitly:
 
 ```bash
-npx omnifocus-list --source local
+npx --package nodejs-omnifocus-bridge omnifocus-list --source local
 ```
 
 Read an encrypted vault from disk:
 
 ```bash
-OMNIFOCUS_PASSWORD="secret" npx omnifocus-list --source vault --path /path/to/OmniFocus.ofocus
+OMNIFOCUS_PASSWORD="secret" npx --package nodejs-omnifocus-bridge omnifocus-list --source vault --path /path/to/OmniFocus.ofocus
 ```
 
 Get structured JSON instead of the ASCII view:
 
 ```bash
-npx omnifocus-list --json
+npx --package nodejs-omnifocus-bridge omnifocus-list --json
 ```
 
 ### CLI Options

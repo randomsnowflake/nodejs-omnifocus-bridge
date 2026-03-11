@@ -1,6 +1,6 @@
 {
   "name": "nodejs-omnifocus-bridge",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Standalone OmniFocus reader and CLI for local macOS installs and encrypted vaults.",
   "type": "module",
   "exports": {
@@ -60,7 +60,7 @@
     "node": ">=20"
   },
   "bin": {
-    "omnifocus-list": "./dist/cli/omnifocus-list.js"
+    "omnifocus-list": "dist/cli/omnifocus-list.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -474,9 +474,22 @@ describe("additional parser processor coverage", () => {
     noteProcessor.startNoteCollection();
     noteProcessor.appendOpenTag("span", { class: "x" }, true);
     noteProcessor.appendText("text");
+    expect(state.noteBuffer).toBe('<span class="x"/>text');
     expect(noteProcessor.handleNoteEnd("span")).toBe(false);
+    expect(state.noteBuffer).toBe('<span class="x"/>text</span>');
     expect(noteProcessor.isCollecting()).toBe(true);
     expect(noteProcessor.handleNoteEnd("note")).toBe(true);
+
+    state.pushObject(createTask({ id: "note-target" }));
+    noteProcessor.startNoteCollection();
+    noteProcessor.appendOpenTag("b", { foo: "bar" });
+    noteProcessor.appendText("hi");
+    expect(state.noteBuffer).toBe('<b foo="bar">hi');
+    expect(noteProcessor.handleNoteEnd("b")).toBe(false);
+    expect(state.noteBuffer).toBe('<b foo="bar">hi</b>');
+    expect(noteProcessor.handleNoteEnd("note")).toBe(true);
+    const notedTask = state.popObject();
+    expect(notedTask && "note" in notedTask ? notedTask.note : null).toBe('<b foo="bar">hi</b>');
 
     tagRelationshipHandler.handleTaskToTagStart({});
     tagRelationshipHandler.handleInboxTask({});

@@ -21,7 +21,7 @@ export class NoteProcessor {
     const attrPairs = Object.entries(attrs)
       .map(([key, value]) => `${key}="${value}"`)
       .join(" ");
-    this.state.noteBuffer += `<${tagName}${attrPairs ? ` ${attrPairs}` : ""}${selfClosing ? "/>" : ">"}>`;
+    this.state.noteBuffer += `<${tagName}${attrPairs ? ` ${attrPairs}` : ""}${selfClosing ? "/>" : ">"}`;
   }
 
   appendCloseTag(tagName: string): void {
